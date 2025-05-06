@@ -36,55 +36,39 @@ tqdm
 The following directory structure is used in this project:
 
 ```
-Face Anti-Spoofing(mini project)
-|-- Colorizer
-    |-- Dataset
-    |   |-- data
-    |   |   |-- [Coloured Images].png
-    |   |
-    |   |-- preprocessedimg
-    |   |   |-- AB
-    |   |   |   |-- [Images].npy
-    |   |   |
-    |   |   |-- L
-    |   |   |   |-- [Images].png
-    |   |
-    |   |-- split
-    |   |   |-- train
-    |   |   |   |-- AB
-    |   |   |   |   |-- [Images].npy
-    |   |   |
-    |   |   |   |-- L
-    |   |   |   |   |-- [Images].png
-    |   |   |
-    |   |   |-- test
-    |   |   |   |-- AB
-    |   |   |   |   |-- [Images].npy
-    |   |   |
-    |   |   |   |-- L
-    |   |   |   |   |-- [Images].png
-    |   |   |
-    |   |   |-- val
-    |   |   |   |-- AB
-    |   |   |   |   |-- [Images].npy
-    |   |   |
-    |   |   |   |-- L
-    |   |   |   |   |-- [Images].png
-    |
-    |-- models
-    |   |-- checkpoints
-    |   |   |-- best_model.pth
-    |   |   |-- checkpoint_epoch_5.pth
-    |   |   |-- training_history.png
-    |   |
-    |   |-- test results
-    |   |   |-- [test].png
-    |
-    |-- source
-    |   |-- preprocess.py
-    |   |-- splitdata.py
-    |   |-- tain.py
-    |   |-- usemodel.py
+Colorizer (mini project)
+└── Colorizer
+    ├── Dataset
+    │   ├── data
+    │   │   └── [Coloured Images].png
+    │   ├── preprocessedimg
+    │   │   ├── AB/
+    │   │   │   └── [Images].npy
+    │   │   └── L/
+    │   │       └── [Images].png
+    │   └── split/
+    │       ├── train/
+    │       │   ├── AB/
+    │       │   └── L/
+    │       ├── test/
+    │       │   ├── AB/
+    │       │   └── L/
+    │       └── val/
+    │           ├── AB/
+    │           └── L/
+    ├── models
+    │   ├── checkpoints/
+    │   │   ├── best_model.pth
+    │   │   ├── checkpoint_epoch_5.pth
+    │   │   └── training_history.png
+    │   └── test results/
+    │       └── [test].png
+    └── source
+        ├── preprocess.py
+        ├── splitdata.py
+        ├── train.py
+        └── usemodel.py
+
 ```
 
 ## Model Description
@@ -94,7 +78,7 @@ The model architecture is based on the U-Net, a popular architecture for image-t
 - **Bottleneck:** A series of convolutional layers that perform the most abstract feature extraction.
 - **Decoder:** A series of layers that upsample the image while combining features from the encoder via skip connections.
 
-The model is trained to predict the color `ab` channels of an input grayscale image in the LAB color space.
+The output is the `ab` channels, predicted from the grayscale input (`L` channel).
 
 ## Usage
 1. Load and Colorize a Single Image
@@ -105,6 +89,7 @@ colorize_and_display('path/to/grayscale_image.jpg')
 ```
 
 This will load the grayscale image, run it through the model, and display the original and colorized images side by side.
+
 2. Load and Colorize Multiple Images from a Directory
 You can also colorize multiple images from a directory by modifying the `input_path` to point to a folder containing grayscale images.
 
@@ -117,10 +102,14 @@ output_path = 'path/to/output/directory'
 ```
 
 This will process all images in the directory and save the colorized results.
+
 3. Model Training
 If you'd like to train your own colorizer model, you'll need to:
-1. Prepare a dataset of paired grayscale and color images.
-2. Train the U-Net model on the dataset (not covered in this `README`, but you can adapt the script to suit your dataset).
+
+I. Prepare a dataset of grayscale and corresponding color images.
+
+II. Modify and run train.py using your dataset (training script is not fully covered here but is adaptable).
+
 Example
 Below is an example usage for processing a single image:
 
@@ -130,9 +119,10 @@ model = UNetColorizer().to(device)
 checkpoint = torch.load('path/to/model/checkpoint.pth', map_location=device)
 model.load_state_dict(checkpoint)
 
-# Load and colorize an image
+# Colorize image
 image_path = 'path/to/grayscale_image.jpg'
 colorized_image = colorize_and_display(image_path)
+
 ```
 
 The original grayscale image and the colorized image will be displayed side by side.
