@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Colorizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Image Colorizer</h1>
+            <p>Bring your old photos back to life with deep learning.</p>
+        </header>
+
+        <div class="upload-section" id="drop-zone">
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="file-input" name="file" accept=".png,.jpg,.jpeg,.bmp" hidden>
+                <div class="upload-content">
+                    <div class="icon">📁</div>
+                    <h3>Drag & Drop or Click to Upload</h3>
+                    <p style="opacity: 0.7; font-size: 0.9em;">Supported formats: PNG, JPG, BMP</p>
+                    <p id="file-name"></p>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+            <p>Colorizing...</p>
+        </div>
+
+        <div class="result-section" id="result-section" style="display: none;">
+            <div class="image-container">
+                <div class="image-box">
+                    <h3>Original</h3>
+                    <img id="original-img" src="" alt="Original Image">
+                </div>
+                <div class="image-box">
+                    <h3>Colorized</h3>
+                    <img id="result-img" src="" alt="Colorized Image">
+                    <a id="download-btn" href="" download class="btn">Download Result</a>
+                </div>
+            </div>
+            <button class="btn secondary" id="reset-btn">Colorize Another</button>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadForm = document.getElementById('upload-form');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('result-section');
+        const originalImg = document.getElementById('original-img');
+        const resultImg = document.getElementById('result-img');
+        const downloadBtn = document.getElementById('download-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        const fileNameDisplay = document.getElementById('file-name');
+
+        // Drag & Drop handlers
+        dropZone.addEventListener('click', (e) => {
+            // Prevent recursion: don't trigger if the click came from the file input itself
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFiles(e.target.files[0]);
+            }
+        });
+
+        function handleFiles(file) {
+            // Display filename
+            fileNameDisplay.textContent = `Selected: ${file.name}`;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading
+            loading.style.display = 'flex';
+            // dropZone.style.display = 'none'; // Keep dropzone visible but maybe disabled? 
+            // Better UX: Fade it out or just overlay loading
+            resultSection.style.display = 'none';
+
+            fetch('/colorize', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.error) {
+                        alert(data.error);
+                        dropZone.style.display = 'flex';
+                    } else {
+                        originalImg.src = data.original;
+                        resultImg.src = data.result;
+                        downloadBtn.href = data.result;
+                        resultSection.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    console.error('Error:', error);
+                    alert('An error occurred during processing.');
+                    dropZone.style.display = 'flex';
+                });
+        }
+
+        resetBtn.addEventListener('click', () => {
+            resultSection.style.display = 'none';
+            // dropZone.style.display = 'flex'; // It's already there
+            fileNameDisplay.textContent = '';
+            fileInput.value = '';
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+    </script>
+</body>
+
+</html>
